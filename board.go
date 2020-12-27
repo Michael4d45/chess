@@ -125,6 +125,9 @@ func (b *Board) MovePiece(pos1 string, pos2 string) error {
 	}
 
 	piece1 := b.Spaces[x1][y1]
+	if piece1 == nil {
+		return nil
+	}
 	canTake, piece2 := piece1.checkCanMove(x1, y1, x2, y2, *b)
 	if canTake {
 		if piece2 != nil {
@@ -135,6 +138,8 @@ func (b *Board) MovePiece(pos1 string, pos2 string) error {
 				}
 			}
 		}
+		b.Spaces[x2][y2] = piece1
+		b.Spaces[x1][y1] = nil
 	}
 
 	return nil
