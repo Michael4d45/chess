@@ -216,5 +216,9 @@ func (b *Board) MovePiece(pos1 string, pos2 string) error {
 
 // Swap will swap two piece positions.
 func (b *Board) Swap(pos1 Position, pos2 Position) {
+	piece := b.Spaces[pos1.x][pos1.y]
+	if piece != nil {
+		piece.moveNum++
+	}
 	b.Spaces[pos2.x][pos2.y], b.Spaces[pos1.x][pos1.y] = b.Spaces[pos1.x][pos1.y], b.Spaces[pos2.x][pos2.y]
 }

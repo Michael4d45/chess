@@ -4,6 +4,7 @@ package chess
 type Piece struct {
 	player    *Player
 	pieceType string
+	moveNum   int
 }
 
 var pieceNames = map[string]string{
@@ -51,7 +52,11 @@ func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
 			}
 		}
 	case "N":
-		return true
+		xDistance, yDistance := pos1.GetDistances(pos2)
+		if xDistance == 1 && yDistance == 2 || yDistance == 1 && xDistance == 2 {
+			b.Swap(pos1, pos2)
+			return true
+		}
 	case "K":
 		if pos1.NextTo(pos2) {
 			b.Swap(pos1, pos2)
@@ -76,11 +81,25 @@ func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
 			}
 		}
 	case "P":
-		if p.player.direction == "N" {
-
-		}
-		if p.player.direction == "S" {
-
+		if p.player.direction == pos1.FileDirection(pos2) {
+			if pos1.NextTo(pos2) {
+				switch pos1.OrientatedTo(pos2) {
+				case "file":
+					b.Swap(pos1, pos2)
+					return true
+				case "diagonal":
+					b.Swap(pos1, pos2)
+					return true
+				}
+			} else if (p.moveNum == 0) {
+				if pos1.OrientatedTo(pos2) == "file" {
+					xDistance, _ := pos1.GetDistances(pos2)
+					if xDistance == 2 && b.CheckEmptySpacesFile(pos1, pos2) {
+						b.Swap(pos1, pos2)
+						return true
+					}
+				}
+			}
 		}
 	}
 	return false
