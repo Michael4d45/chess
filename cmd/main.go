@@ -42,6 +42,13 @@ func main() {
 			fmt.Println(player)
 		}
 
+		if matched, _ := regexp.MatchString(`^piece ` + posReg + `$`, text); matched {
+			pos := text[6:8]
+			piece := board.GetPieceByString(pos)
+			fmt.Println(piece)
+			fmt.Println(piece.Moves)
+		}
+
 		fmt.Println(board.String())
 	}
 }

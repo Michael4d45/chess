@@ -4,7 +4,7 @@ package chess
 type Piece struct {
 	player    *Player
 	pieceType string
-	moveNum   int
+	Moves     []string
 }
 
 var pieceNames = map[string]string{
@@ -29,54 +29,54 @@ func NewPiece(pieceType string, p *Player) *Piece {
 }
 
 func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
-	//piece2 := b.Spaces[x2][y2]
+	piece2 := b.GetPiece(pos2)
 	switch p.pieceType {
 	case "R":
 		switch pos1.OrientatedTo(pos2) {
 		case "rank":
 			if b.CheckEmptySpacesRank(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		case "file":
 			if b.CheckEmptySpacesFile(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		}
 	case "B":
 		if pos1.OrientatedTo(pos2) == "diagonal" {
 			if b.CheckEmptySpacesDiagonal(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		}
 	case "N":
 		xDistance, yDistance := pos1.GetDistances(pos2)
 		if xDistance == 1 && yDistance == 2 || yDistance == 1 && xDistance == 2 {
-			b.Swap(pos1, pos2)
+			b.Swap(pos1, pos2, "")
 			return true
 		}
 	case "K":
 		if pos1.NextTo(pos2) {
-			b.Swap(pos1, pos2)
+			b.Swap(pos1, pos2, "")
 			return true
 		}
 	case "Q":
 		switch pos1.OrientatedTo(pos2) {
 		case "rank":
 			if b.CheckEmptySpacesRank(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		case "file":
 			if b.CheckEmptySpacesFile(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		case "diagonal":
 			if b.CheckEmptySpacesDiagonal(pos1, pos2) {
-				b.Swap(pos1, pos2)
+				b.Swap(pos1, pos2, "")
 				return true
 			}
 		}
@@ -85,17 +85,36 @@ func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
 			if pos1.NextTo(pos2) {
 				switch pos1.OrientatedTo(pos2) {
 				case "file":
-					b.Swap(pos1, pos2)
-					return true
+					if piece2 == nil {
+						b.Swap(pos1, pos2, "move")
+						return true
+					}
 				case "diagonal":
-					b.Swap(pos1, pos2)
-					return true
+					if piece2 != nil {
+						b.Swap(pos1, pos2, "take")
+						return true
+					}
+					// En passant
+					pos3 := Position{}
+					switch pos1.RankDirection(pos2) {
+					case "W":
+						pos3 = Position{pos1.x, pos1.y - 1}
+					case "E":
+						pos3 = Position{pos1.x, pos1.y + 1}
+					}
+					piece3 := b.GetPiece(pos3)
+					if piece3 != nil {
+						if piece3.pieceType == "P" && piece3.LastMove() == "double" {
+							b.Swap(pos1, pos2, "En passant")
+							return true
+						}
+					}
 				}
-			} else if (p.moveNum == 0) {
+			} else if len(p.Moves) == 0 {
 				if pos1.OrientatedTo(pos2) == "file" {
 					xDistance, _ := pos1.GetDistances(pos2)
 					if xDistance == 2 && b.CheckEmptySpacesFile(pos1, pos2) {
-						b.Swap(pos1, pos2)
+						b.Swap(pos1, pos2, "double")
 						return true
 					}
 				}
@@ -107,4 +126,12 @@ func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
 
 func (p Piece) String() string {
 	return p.player.name + p.pieceType
+}
+
+// LastMove returns the last move of the move list.
+func (p *Piece) LastMove() string {
+	if len(p.Moves) == 0 {
+		return "empty"
+	}
+	return p.Moves[len(p.Moves)-1]
 }

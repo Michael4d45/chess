@@ -191,23 +191,36 @@ func (b *Board) AssignSpace(pos string, piece string, player *Player) error {
 	return nil
 }
 
+// GetPiece returns pice at this position on the board.
+func (b *Board) GetPiece(pos Position) *Piece {
+	return b.Spaces[pos.x][pos.y]
+}
+
+// GetPieceByString get peice by string.
+func (b *Board) GetPieceByString(pos string) *Piece {
+	x, y, _ := toXY(pos)
+	return b.GetPiece(Position{x, y})
+}
+
 // MovePiece will try to move one piece from one space to another.
-func (b *Board) MovePiece(pos1 string, pos2 string) error {
-	x1, y1, err1 := toXY(pos1)
+func (b *Board) MovePiece(posString1 string, posString2 string) error {
+	x1, y1, err1 := toXY(posString1)
 	if err1 != nil {
 		return err1
 	}
+	pos1 := Position{x1, y1}
 
-	x2, y2, err2 := toXY(pos2)
+	x2, y2, err2 := toXY(posString2)
 	if err2 != nil {
 		return err2
 	}
+	pos2 := Position{x2, y2}
 
-	piece1 := b.Spaces[x1][y1]
+	piece1 := b.GetPiece(pos1)
 	if piece1 == nil {
 		return nil
 	}
-	moved := piece1.move(Position{x1, y1}, Position{x2, y2}, b)
+	moved := piece1.move(pos1, pos2, b)
 	if moved {
 	}
 
@@ -215,10 +228,10 @@ func (b *Board) MovePiece(pos1 string, pos2 string) error {
 }
 
 // Swap will swap two piece positions.
-func (b *Board) Swap(pos1 Position, pos2 Position) {
-	piece := b.Spaces[pos1.x][pos1.y]
-	if piece != nil {
-		piece.moveNum++
+func (b *Board) Swap(pos1 Position, pos2 Position, move string) {
+	piece := b.GetPiece(pos1)
+	if piece != nil && move != "" {
+		piece.Moves = append(piece.Moves, move)
 	}
 	b.Spaces[pos2.x][pos2.y], b.Spaces[pos1.x][pos1.y] = b.Spaces[pos1.x][pos1.y], b.Spaces[pos2.x][pos2.y]
 }
