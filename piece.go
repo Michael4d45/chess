@@ -2,7 +2,7 @@ package chess
 
 // Piece is an object used on the board
 type Piece struct {
-	player *Player
+	player    *Player
 	pieceType string
 }
 
@@ -27,19 +27,54 @@ func NewPiece(pieceType string, p *Player) *Piece {
 	return piece
 }
 
-func (p Piece) checkCanMove(x1 byte, y1 byte, x2 byte, y2 byte, board Board) (bool, *Piece) {
-	piece2 := board.Spaces[x2][y2]
-	switch(p.pieceType){
+func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
+	//piece2 := b.Spaces[x2][y2]
+	switch p.pieceType {
 	case "R":
-		return true, piece2
+		switch pos1.OrientatedTo(pos2) {
+		case "rank":
+			if b.CheckEmptySpacesRank(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		case "file":
+			if b.CheckEmptySpacesFile(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		}
 	case "B":
-		return true, piece2
+		if pos1.OrientatedTo(pos2) == "diagonal" {
+			if b.CheckEmptySpacesDiagonal(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		}
 	case "N":
-		return true, piece2
+		return true
 	case "K":
-		return true, piece2
+		if pos1.NextTo(pos2) {
+			b.Swap(pos1, pos2)
+			return true
+		}
 	case "Q":
-		return true, piece2
+		switch pos1.OrientatedTo(pos2) {
+		case "rank":
+			if b.CheckEmptySpacesRank(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		case "file":
+			if b.CheckEmptySpacesFile(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		case "diagonal":
+			if b.CheckEmptySpacesDiagonal(pos1, pos2) {
+				b.Swap(pos1, pos2)
+				return true
+			}
+		}
 	case "P":
 		if p.player.direction == "N" {
 
@@ -47,11 +82,10 @@ func (p Piece) checkCanMove(x1 byte, y1 byte, x2 byte, y2 byte, board Board) (bo
 		if p.player.direction == "S" {
 
 		}
-		return true, piece2
 	}
-	return false, nil
+	return false
 }
 
-func (p Piece) String() string{
+func (p Piece) String() string {
 	return p.player.name + p.pieceType
 }

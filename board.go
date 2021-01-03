@@ -10,6 +10,85 @@ type Board struct {
 	Players [2]*Player
 }
 
+
+// CheckEmptySpacesFile will return true if all the spaces are empty between the two positions.
+func (b *Board) CheckEmptySpacesFile(pos1 Position, pos2 Position) bool {
+	y := pos1.y
+	xStart := pos1.x
+	xEnd := pos2.x
+	if xStart > xEnd {
+		xStart, xEnd = xEnd, xStart
+	}
+	for x := xStart + 1; x < xEnd; x++ {
+		if b.Spaces[x][y] != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// CheckEmptySpacesRank will return true if all the spaces are empty between the two positions.
+func (b *Board) CheckEmptySpacesRank(pos1 Position, pos2 Position) bool {
+	x := pos1.x
+	yStart := pos1.y
+	yEnd := pos2.y
+	if yStart > yEnd {
+		yStart, yEnd = yEnd, yStart
+	}
+	for y := yStart + 1; y < yEnd; y++ {
+		if b.Spaces[x][y] != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// CheckEmptySpacesDiagonal true if all the spaces are empty between the two positions.
+func (b *Board) CheckEmptySpacesDiagonal(pos1 Position, pos2 Position) bool {
+	xStart := pos1.x
+	xEnd := pos2.x
+	yStart := pos1.y
+	yEnd := pos2.y
+	if yStart > yEnd {
+		if xStart > xEnd {
+			x := xStart - 1
+			for y := yStart - 1; y > yEnd; y-- {
+				if b.Spaces[x][y] != nil {
+					return false
+				}
+				x--
+			}
+		} else {
+			x := xStart + 1
+			for y := yStart - 1; y > yEnd; y-- {
+				if b.Spaces[x][y] != nil {
+					return false
+				}
+				x++
+			}
+		}
+	} else {
+		if xStart > xEnd {
+			x := xStart - 1
+			for y := yStart + 1; y < yEnd; y++ {
+				if b.Spaces[x][y] != nil {
+					return false
+				}
+				x--
+			}
+		} else {
+			x := xStart + 1
+			for y := yStart + 1; y < yEnd; y++ {
+				if b.Spaces[x][y] != nil {
+					return false
+				}
+				x++
+			}
+		}
+	}
+	return true
+}
+
 func (b *Board) String() string {
 	s := "\n"
 	for i := 0; i < len(b.Spaces); i++ {
@@ -19,7 +98,7 @@ func (b *Board) String() string {
 			if space != nil {
 				s += space.String()
 			} else {
-				if j % 2 == i % 2 {
+				if j%2 == i%2 {
 					s += "  "
 				} else {
 					s += "**"
@@ -28,7 +107,7 @@ func (b *Board) String() string {
 		}
 		s += "|\n"
 		for j := 0; j < len(b.Spaces[i]); j++ {
-			if j % 2 == i % 2 {
+			if j%2 == i%2 {
 				s += "|__"
 			} else {
 				s += "|**"
@@ -128,19 +207,14 @@ func (b *Board) MovePiece(pos1 string, pos2 string) error {
 	if piece1 == nil {
 		return nil
 	}
-	canTake, piece2 := piece1.checkCanMove(x1, y1, x2, y2, *b)
-	if canTake {
-		if piece2 != nil {
-			for i := 0; i < len(b.Players); i++ {
-				if piece2.player.name == b.Players[i].name {
-					_ = append(b.Players[i].graveyard, *piece2)
-					break
-				}
-			}
-		}
-		b.Spaces[x2][y2] = piece1
-		b.Spaces[x1][y1] = nil
+	moved := piece1.move(Position{x1, y1}, Position{x2, y2}, b)
+	if moved {
 	}
 
 	return nil
+}
+
+// Swap will swap two piece positions.
+func (b *Board) Swap(pos1 Position, pos2 Position) {
+	b.Spaces[pos2.x][pos2.y], b.Spaces[pos1.x][pos1.y] = b.Spaces[pos1.x][pos1.y], b.Spaces[pos2.x][pos2.y]
 }
