@@ -10,45 +10,67 @@ import (
 	"github.com/michael4d45/chess"
 )
 
+const rankReg = `([a-h]|A-H])`
+const fileReg = `[1-8]`
+const posReg = rankReg + fileReg
+const movePosReg = posReg + ` ` + posReg
+
 func main() {
 	board := chess.FilledBoard()
+
+	actions := []string{}
+	if len(os.Args) > 1 {
+		actions = strings.Split(os.Args[1], ",")
+	}
+	i := 0
+
 	fmt.Println(board.String())
 
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Welcome to chess")
-	rankReg := `([a-h]|A-H])`
-	fileReg := `[1-8]`
-	posReg := rankReg + fileReg
-	movePosReg := posReg + ` ` + posReg
 	for {
 		fmt.Print("-> ")
-		text, _ := reader.ReadString('\n')
-		text = strings.Replace(text, "\n", "", -1)
-		text = strings.Replace(text, "\r", "", -1) // for windows
+		text := ""
+		
+		if i < len(actions) {
+			text = actions[i]
+			i++
+		} else {
+			text, _ = reader.ReadString('\n')
+			text = strings.Replace(text, "\n", "", -1)
+			text = strings.Replace(text, "\r", "", -1) // for windows
+		}
 
-		if strings.Compare("exit", text) == 0 {
+		if !doAction(text, &board) {
 			break
-		}
-
-		if matched, _ := regexp.MatchString(`^`+movePosReg+`$`, text); matched {
-			pos1 := text[:2]
-			pos2 := text[3:5]
-			board.MovePiece(pos1, pos2)
-		}
-
-		if matched, _ := regexp.MatchString(`^player[1|2]$`, text); matched {
-			num := text[6] - '1'
-			player := board.Players[num]
-			fmt.Println(player)
-		}
-
-		if matched, _ := regexp.MatchString(`^piece ` + posReg + `$`, text); matched {
-			pos := text[6:8]
-			piece := board.GetPieceByString(pos)
-			fmt.Println(piece)
-			fmt.Println(piece.Moves)
 		}
 
 		fmt.Println(board.String())
 	}
+}
+
+func doAction(action string, b *chess.Board) bool {
+	if strings.Compare("exit", action) == 0 {
+		return false
+	}
+
+	if matched, _ := regexp.MatchString(`^`+movePosReg+`$`, action); matched {
+		pos1 := action[:2]
+		pos2 := action[3:5]
+		b.MovePiece(pos1, pos2)
+	}
+
+	if matched, _ := regexp.MatchString(`^player[1|2]$`, action); matched {
+		num := action[6] - '1'
+		player := b.Players[num]
+		fmt.Println(player)
+	}
+
+	if matched, _ := regexp.MatchString(`^piece ` + posReg + `$`, action); matched {
+		pos := action[6:8]
+		piece := b.GetPieceByString(pos)
+		fmt.Println(piece)
+		fmt.Println(piece.Moves)
+	}
+	return true
 }
