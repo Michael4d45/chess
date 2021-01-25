@@ -31,9 +31,10 @@ func main() {
 	for {
 		fmt.Print("-> ")
 		text := ""
-		
+
 		if i < len(actions) {
 			text = actions[i]
+			fmt.Print(text)
 			i++
 		} else {
 			text, _ = reader.ReadString('\n')
