@@ -6,10 +6,15 @@ import (
 
 // Board has a 2D array representing piece placements
 type Board struct {
-	Spaces  [8][8]*Piece
-	Players [2]*Player
+	Size    byte
+	Spaces  [][]*Piece
+	Players []*Player
 }
 
+// GetMaxPos returns the maximum position for a piece
+func (b *Board) GetMaxPos() byte {
+	return b.Size - 1
+}
 
 // CheckEmptySpacesFile will return true if all the spaces are empty between the two positions.
 func (b *Board) CheckEmptySpacesFile(pos1 Position, pos2 Position) bool {
@@ -142,7 +147,12 @@ func FilledBoard() Board {
 	p2.name = "B"
 	p1.direction = "N"
 	p2.direction = "S"
-	board := Board{Players: [2]*Player{p1, p2}}
+	size := byte(8)
+	spaces := make([][]*Piece, size, size)
+	for i := range spaces {
+        spaces[i] = make([]*Piece, size)
+    }
+	board := Board{Size: size, Spaces: spaces, Players: []*Player{p1, p2}}
 
 	board.AssignSpace("a1", "R", p1)
 	board.AssignSpace("b1", "N", p1)

@@ -66,16 +66,16 @@ func (p *Piece) move(pos1 Position, pos2 Position, b *Board) bool {
 			if yDistance == 2 && xDistance == 0 {
 				castlePos1 := Position{}
 				castlePos2 := Position{}
-				switch pos1.RankDirection(pos2) {
+				posDir := pos1.RankDirection(pos2)
+				switch posDir {
 				case "W":
 					castlePos1 = Position{x: pos1.x, y: 0}
 					castlePos2 = Position{x: pos1.x, y: pos2.y + 1}
 				case "E":
-					castlePos1 = Position{x: pos1.x, y: 7}
+					castlePos1 = Position{x: pos1.x, y: b.GetMaxPos()}
 					castlePos2 = Position{x: pos1.x, y: pos2.y - 1}
 				}
 				castle := b.GetPiece(castlePos1)
-				posDir := pos1.RankDirection(pos2)
 				castleDir := pos1.RankDirection(castlePos1)
 				if castle != nil &&
 					castle.pieceType == "R" &&
