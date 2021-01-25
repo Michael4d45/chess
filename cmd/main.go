@@ -28,7 +28,8 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Welcome to chess")
-	for {
+	done := false
+	for !done {
 		fmt.Print("-> ")
 		text := ""
 
@@ -42,9 +43,7 @@ func main() {
 			text = strings.Replace(text, "\r", "", -1) // for windows
 		}
 
-		if !doAction(text, &board) {
-			break
-		}
+		done = !doAction(text, &board)
 
 		fmt.Println(board.String())
 	}
@@ -67,7 +66,7 @@ func doAction(action string, b *chess.Board) bool {
 		fmt.Println(player)
 	}
 
-	if matched, _ := regexp.MatchString(`^piece ` + posReg + `$`, action); matched {
+	if matched, _ := regexp.MatchString(`^piece `+posReg+`$`, action); matched {
 		pos := action[6:8]
 		piece := b.GetPieceByString(pos)
 		fmt.Println(piece)
